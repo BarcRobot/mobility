@@ -52,7 +52,7 @@ class VelocityFilter {
     float v1Prev;
     
   public:
-    VelocityFilter() : posPrev(0), v1Filt(0), v1Prev(0), {}
+    VelocityFilter() : posPrev(0), v1Filt(0), v1Prev(0) {}
     
     // Method 1: Calculate velocity from position difference
     float getVelocity1(int pos, float deltaT) {
@@ -97,9 +97,9 @@ class MecanumKinematics {
       // Convert m/s to RPM
       float wheelCircum = 2.0 * PI * wheelRadius;
       wheelRPM[0] = (v0_ms / wheelCircum) * 60.0;
-      wheelRPM[1] = (v1_ms / wheelCircum) * 60.0;
+      wheelRPM[1] = -(v1_ms / wheelCircum) * 60.0;
       wheelRPM[2] = (v2_ms / wheelCircum) * 60.0;
-      wheelRPM[3] = (v3_ms / wheelCircum) * 60.0;
+      wheelRPM[3] = -(v3_ms / wheelCircum) * 60.0;
     }
     
     // Forward kinematics: Wheel RPM → Robot velocity
@@ -128,11 +128,11 @@ class MecanumKinematics {
 #define M3 3
 
 // Pin definitions
-const int enca[] = {18, 19, 20, 21};  // Encoder A (interrupt pins)
-const int encb[] = {22, 23, 24, 25};  // Encoder B
-const int pwm[] = {9, 10, 5, 2};      // PWM pins
-const int ina[] = {2, 7, 4, A1};     // Direction A
-const int inb[] = {4, 8, 3, A2};    // Direction B
+const int enca[] = {18, 19, 20, 21};
+const int encb[] = {34, 35, 36, 37};
+const int pwm[] = {9, 10, 5, 3};
+const int ina[] = {2, 7, 22, 25};
+const int inb[] = {4, 8, 23, 26};
 
 // Robot geometry (MEASURE THESE FOR YOUR ROBOT!)
 const float lx = 0.355;           // Half wheelbase (m)
@@ -206,8 +206,8 @@ void loop() {
   
   // Compute velocity with method 1 and filter both methods
   float velocity1[NMOTORS];
-  float v1[NMOTORS]
-  float v1Filt[NMOTORS]
+  float v1[NMOTORS];
+  float v1Filt[NMOTORS];
   
   for(int k = 0; k < NMOTORS; k++) {
     // Velocity method 1
@@ -224,8 +224,9 @@ void loop() {
   // parseCommand();
   
   // Set target using test pattern (comment out when using RPi)
-  targetVx = 0;
-  targetVy = 0.5 * (sin(currT/1e6) > 0 ? 1 : -1);  // Square wave
+  targetVx = 0.25;
+  targetVy = 0;
+  // targetVy = 0.5 * (sin(currT/1e6) > 0 ? 1 : -1);  // Square wave
   targetOmega = 0;
 
   // Set target wheel velocities using mecanum kinematics
@@ -236,7 +237,7 @@ void loop() {
   for(int k = 0; k < NMOTORS; k++){
     int pwr, dir;
     // Evaluate the control signal using filtered velocity
-    pid[k].evalu(v1Filt[k], vt, deltaT, pwr, dir);
+    pid[k].evalu(v1Filt[k], targetRPM[k], deltaT, pwr, dir);
     
     // Signal the motor
     setMotor(dir, pwr, pwm[k], ina[k], inb[k]);
