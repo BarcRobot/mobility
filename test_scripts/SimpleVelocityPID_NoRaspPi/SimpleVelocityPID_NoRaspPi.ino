@@ -389,6 +389,8 @@ void loop() {
 
   // Check safety
   checkSafety();
+
+  float targetRPM[NMOTORS];
   
   // Motor control logic
   if(systemStatus == ESTOP) {
@@ -413,13 +415,12 @@ void loop() {
     // Non-zero target - run PID control
     
     // Calculate target wheel velocities
-    float wheelVelTargets[NMOTORS];
-    kinematics.inverseKinematics(targetVx, targetVy, targetOmega, wheelVelTargets);
+    kinematics.inverseKinematics(targetVx, targetVy, targetOmega, targetRPM);
     
     // PID control for each motor
     for(int k = 0; k < NMOTORS; k++) {
       int pwr, dir;
-      pid[k].evalu(v1Filt[k], wheelVelTargets[k], deltaT, pwr, dir);
+      pid[k].evalu(v1Filt[k], targetRPM[k], deltaT, pwr, dir);
       setMotor(dir, pwr, pwm[k], ina[k], inb[k]);
     }
   }
@@ -474,57 +475,6 @@ void readEncoder(){
   }
   else{
     posi[j]--;
-  }
-}
-
-void parseCommand() {
-  if(Serial.available()) {
-    String cmd = Serial.readStringUntil('\n');
-    
-    if(cmd.startsWith("C,")) {
-      // Command format: C,vx,vy,omega\n
-      int idx = 2;
-      int comma1 = cmd.indexOf(',', idx);
-      int comma2 = cmd.indexOf(',', comma1 + 1);
-      
-      if(comma1 > 0 && comma2 > 0) {
-        targetVx = cmd.substring(idx, comma1).toFloat();
-        targetVy = cmd.substring(comma1 + 1, comma2).toFloat();
-        targetOmega = cmd.substring(comma2 + 1).toFloat();
-        
-        lastCommandTime = millis();
-        if(systemStatus != ESTOP) {
-          systemStatus = OK;
-        }
-      }
-    }
-    else if(cmd.startsWith("S")) {
-      // Emergency stop
-      targetVx = 0;
-      targetVy = 0;
-      targetOmega = 0;
-      systemStatus = ESTOP;
-      
-      // Immediately set all motors to PWM 0
-      for(int k = 0; k < NMOTORS; k++) {
-        setMotor(0, 0, pwm[k], ina[k], inb[k]);
-      }
-      Serial.println("# EMERGENCY STOP");
-    }
-    else if(cmd.startsWith("R")) {
-      // Reset odometry
-      odomX = 0;
-      odomY = 0;
-      odomTheta = 0;
-      Serial.println("# Odometry reset");
-    }
-    else if(cmd.startsWith("E")) {
-      // Clear emergency stop
-      if(systemStatus == ESTOP) {
-        systemStatus = OK;
-        Serial.println("# ESTOP cleared");
-      }
-    }
   }
 }
 
