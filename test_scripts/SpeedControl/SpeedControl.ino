@@ -1,12 +1,13 @@
 #include <util/atomic.h>
 
 // Pins
-#define ENCA 18     // Encoder A (changed from pin 2)
-#define ENCB 3      // Encoder B
-#define PWM 9       // M1PWM on shield (was pin 5)
+#define ENCA 25     // Encoder A (changed from pin 2)
+#define ENCB 27      // Encoder B
+#define ENCH 34
+#define ENCL 35
+#define PWM 6       // M1PWM on shield (was pin 5)
 #define INA 2       // M1INA on shield (was pin 6) 
-#define INB 4       // M1INB on shield (was pin 7)
-#define EN 6        // M1EN - ENABLE PIN (was missing!)
+#define INB 3       // M1INB on shield (was pin 7)
 
 // globals
 long prevT = 0;
@@ -27,13 +28,15 @@ void setup() {
 
   pinMode(ENCA,INPUT);
   pinMode(ENCB,INPUT);
+  pinMode(ENCH,OUTPUT);
+  pinMode(ENCL,OUTPUT);
   pinMode(PWM,OUTPUT);
   pinMode(INA,OUTPUT);
   pinMode(INB,OUTPUT);
-  pinMode(EN, OUTPUT); 
 
   // CRITICAL: Enable the motor driver!
-  digitalWrite(EN, HIGH);  // ← ADD THIS!
+  digitalWrite(ENCH, HIGH);  // ← ADD THIS!
+  digitalWrite(ENCL, LOW);  // ← ADD THIS!
   
   // Start with motor stopped
   setMotor(0, 0, PWM, INA, INB);
