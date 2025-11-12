@@ -17,7 +17,7 @@ const int DIRA_PIN = 2;
 
 // Motor B pins
 const int PWMB_PIN = 10;
-const int DIRB_PIN = 4;
+const int DIRB_PIN = 3;
 
 // Motor state
 int motorA_pwm = 0;

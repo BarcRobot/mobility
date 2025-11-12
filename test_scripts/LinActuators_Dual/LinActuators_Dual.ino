@@ -41,8 +41,8 @@ const int PWM_PIN_1 = 5;
 const int DIR_PIN_1 = 4;
 
 // Actuator 2
-const int PWM_PIN_2 = 6;
-const int DIR_PIN_2 = 7;
+const int PWM_PIN_2 = 7;
+const int DIR_PIN_2 = 6;
 
 // Actuator structure
 struct Actuator {
